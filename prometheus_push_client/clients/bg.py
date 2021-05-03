@@ -2,6 +2,8 @@ import asyncio
 import threading
 import time
 
+from prometheus_push_client import compat
+
 
 class BackgroundClient:
 
@@ -56,7 +58,7 @@ class AsyncioBGClient(BackgroundClient):
     async def start(self):
         self.stop_event = asyncio.Event()
         await self.transport.start()
-        self._runner = asyncio.create_task(self.run())
+        self._runner = compat.create_task(self.run())
 
     async def stop(self):
         self.stop_event.set()

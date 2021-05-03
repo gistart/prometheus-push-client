@@ -12,6 +12,8 @@
 *.egg-info
 __pycache__
 .vscode*
+.coverage
+coverage.xml
 
 !.gitkeep
 !/.gitignore
