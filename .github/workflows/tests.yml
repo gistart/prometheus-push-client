@@ -1,0 +1,50 @@
+name: test-all
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: run all tests
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9, 'pypy3']
+    services:
+      victoria:
+        image: victoriametrics/victoria-metrics:v1.59.0
+        #options: >-
+        #  --entrypoint "/victoria-metrics-prod", "--envflag.enable"]
+        env:
+          httpListenAddr: 8429
+          influxListenAddr: 8491
+          graphiteListenAddr: 8492
+        ports:
+        - 8428:8428
+        - 8491:8491
+        - 8492:8492
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+    - name: python${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: pip-requirements
+      run: pip install --upgrade -e .[test]
+    - name: run-test
+      run: pytest -svvv --continue-on-collection-errors --cov=./prometheus_push_client --cov-report=xml:coverage.xml
+      env:
+        VM_HOST: localhost
+        VM_API_PORT: 8428
+        VM_INFLUX_PORT: 8491
+        VM_GRAPHITE_PORT: 8492
+    - name: upload-cov
+      uses: codecov/codecov-action@v1
+      with:
+        files: coverage.xml
+        verbose: true

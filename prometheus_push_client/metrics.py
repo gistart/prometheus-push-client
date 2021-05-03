@@ -9,7 +9,6 @@ class _PushMixin:
         kwargs["registry"] = kwargs.get("registry", PUSH_REGISTRY)
         self._default_labelvalues = default_labelvalues or {}
         super().__init__(name, documentation, **kwargs)
-
         # TODO: hooks for sync mode
 
     def labels(self, *labelvalues, **labelkwargs):

@@ -38,7 +38,7 @@ setup(
         "test": [
             "pytest",
             "pytest-asyncio",
-            "aiohttp",
+            "pytest-cov",
             "requests",
         ],
     }
