@@ -1,0 +1,17 @@
+*.swo
+*.swp
+*.pyc
+*.pyo
+*.log
+*.lock
+.env*
+.venv*
+.pypyenv*
+.pytest_*
+.mypy_cache
+*.egg-info
+__pycache__
+.vscode*
+
+!.gitkeep
+!/.gitignore
