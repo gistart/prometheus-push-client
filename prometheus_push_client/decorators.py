@@ -47,18 +47,36 @@ def influx_udp_thread(host, port, period=15.0):
     return _thread_bg(client)
 
 
-def graphite_udp_async(host, port, period=15.0):
+def influx_http_async(url, period=15.0):
     client = ppc.AsyncioBGClient(
-        format=ppc.GraphiteFormat(),
+        format=ppc.InfluxFormat(),
+        transport=ppc.AioHttpTransport(url),
+        period=period,
+    )
+    return _async_bg(client)
+
+
+def influx_http_thread(url, period=15.0):
+    client = ppc.ThreadBGClient(
+        format=ppc.InfluxFormat(),
+        transport=ppc.SyncHttpTransport(url),
+        period=period,
+    )
+    return _thread_bg(client)
+
+
+def statsd_udp_async(host, port, period=15.0):
+    client = ppc.AsyncioBGClient(
+        format=ppc.StatsdFormat(),
         transport=ppc.AioUdpTransport(host, port),
         period=period,
     )
     return _async_bg(client)
 
 
-def graphite_udp_thread(host, port, period=15.0):
+def statsd_udp_thread(host, port, period=15.0):
     client = ppc.ThreadBGClient(
-        format=ppc.GraphiteFormat(),
+        format=ppc.StatsdFormat(),
         transport=ppc.SyncUdpTransport(host, port),
         period=period,
     )

@@ -33,8 +33,10 @@ class ThreadBGClient(BackgroundClient, threading.Thread):
 
     def stop(self):
         self.stop_event.set()
-        self.join()
-        self.transport.stop()
+        try:
+            self.join()
+        finally:
+            self.transport.stop()
 
     def run(self):
         period = self.period
@@ -62,8 +64,10 @@ class AsyncioBGClient(BackgroundClient):
 
     async def stop(self):
         self.stop_event.set()
-        await asyncio.wait([self._runner])  # TODO timeout, catch errors
-        self.transport.stop()
+        try:
+            await asyncio.wait([self._runner])
+        finally:
+            await self.transport.stop()
 
     async def run(self):
         period = self.period

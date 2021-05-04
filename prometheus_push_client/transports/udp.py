@@ -16,9 +16,6 @@ class BaseUdpTransport:
     def stop(self):
         self.transport.close()
 
-    def start(self):
-        raise NotImplementedError()
-
     def pack_datagrams(self, iterable):
         datagram = []
         datagram_size = 0
@@ -30,14 +27,14 @@ class BaseUdpTransport:
                 yield b"\n".join(datagram)
                 datagram.clear()
                 datagram_size = 0
-            else:
-                datagram.append(line)
-                datagram_size += len(line)
+
+            datagram.append(line)
+            datagram_size += len(line)
 
         if datagram:
             yield b"\n".join(datagram)
 
-    def _push_all(self, iterable):
+    def push_all(self, iterable):
         for data in self.pack_datagrams(iterable):
             self.push_one(data)
 
@@ -48,8 +45,6 @@ class BaseUdpTransport:
 class SyncUdpTransport(BaseUdpTransport):
     def start(self):
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-    push_all = BaseUdpTransport._push_all
 
     def push_one(self, data):
         self.transport.sendto(data, (self.host, self.port))
@@ -63,8 +58,11 @@ class AioUdpTransport(BaseUdpTransport):
             remote_addr=(self.host, self.port)
         )
 
+    async def stop(self):
+        super().stop()
+
     async def push_all(self, iterable):
-        self._push_all(iterable)
+        super().push_all(iterable)
 
     def push_one(self, data):
         self.transport.sendto(data)

@@ -25,10 +25,10 @@ class InfluxFormat(BaseFormat):
     def format_sample(self, sample, *_):
         sample_name, measurement_name = sample.name.rsplit("_", 1)
 
-        tags = ""
+        tag_set = ""
         if sample.labels:
-            tags = ",".join(f"{k}={v}" for k,v in sample.labels.items())
-            tags = f",{tags}"
+            tags = ["", *(f"{k}={v}" for k, v in sample.labels.items())]
+            tag_set = ",".join(tags)
 
         ts = ""
         if sample.timestamp:
@@ -36,7 +36,7 @@ class InfluxFormat(BaseFormat):
 
         return self.FMT_SAMPLE.format(
             sample_name=sample_name,
-            tag_set=tags,
+            tag_set=tag_set,
             measurement_name=measurement_name,
             value=sample.value,
             timestamp=ts,

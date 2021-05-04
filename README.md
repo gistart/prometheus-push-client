@@ -1,7 +1,7 @@
-# prometheus-push-client
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gistart/prometheus-push-client/test-all)](https://github.com/gistart/prometheus-push-client/actions)
+[![Codecov](https://img.shields.io/codecov/c/github/gistart/prometheus-push-client)](https://codecov.io/gh/gistart/prometheus-push-client)
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/gistart/prometheus-push-client/test-all)
-![Codecov](https://img.shields.io/codecov/c/github/gistart/prometheus-push-client)
+# prometheus-push-client
 
 ## Default labelvalues
 

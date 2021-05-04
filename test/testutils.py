@@ -1,3 +1,5 @@
+import re
+
 import prometheus_client as pc
 import prometheus_push_client as ppc
 
@@ -15,8 +17,8 @@ def make_metric_fixture(request, metric):
     return metric
 
 
-def collect_metrics(*metric_names):
-    all_data = pc.generate_latest(ppc.PUSH_REGISTRY).decode()
+def collect_metrics(*metric_names, data=None):
+    data = data or pc.generate_latest(ppc.PUSH_REGISTRY).decode()
 
     def only_interesting(line):
         return (
@@ -27,7 +29,7 @@ def collect_metrics(*metric_names):
             )
         )
 
-    interesting_lines = filter(only_interesting, all_data.split("\n"))
+    interesting_lines = filter(only_interesting, data.split("\n"))
     return "\n".join(interesting_lines)
 
 
@@ -39,12 +41,12 @@ def collect_formatter(formatter_cls, *metric_names):
         line = line.decode()
 
         if metric_names:
-            for mnane in metric_names:
+            for mname in metric_names:
                 if line.startswith(mname):
                     collected.append(line)
                     break
         else:
             collected.append(line)
 
-    collected = filter(lambda line: " created=" not in line, collected)
+    collected = filter(lambda line: "created" not in line, collected)
     return "\n".join(collected)

@@ -12,21 +12,25 @@ jobs:
     name: run all tests
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
         python-version: [3.6, 3.7, 3.8, 3.9, 'pypy3']
     services:
       victoria:
         image: victoriametrics/victoria-metrics:v1.59.0
-        #options: >-
-        #  --entrypoint "/victoria-metrics-prod", "--envflag.enable"]
         env:
           httpListenAddr: 8429
           influxListenAddr: 8491
-          graphiteListenAddr: 8492
         ports:
         - 8428:8428
         - 8491:8491
-        - 8492:8492
+        - 8491:8491/udp
+      statsd-exporter:
+        image: prom/statsd-exporter:v0.20.2
+        ports:
+        - 9102:9102
+        - 9125:9125
+        - 9125:9125/udp
     steps:
     - name: checkout
       uses: actions/checkout@v2
@@ -37,14 +41,15 @@ jobs:
     - name: pip-requirements
       run: pip install --upgrade -e .[test]
     - name: run-test
-      run: pytest -svvv --continue-on-collection-errors --cov=./prometheus_push_client --cov-report=xml:coverage.xml
+      run: pytest
       env:
         VM_HOST: localhost
         VM_API_PORT: 8428
         VM_INFLUX_PORT: 8491
-        VM_GRAPHITE_PORT: 8492
+        STATSD_HOST: localhost
+        STATSD_API_PORT: 9102
+        STATSD_UDP_PORT: 9125
     - name: upload-cov
       uses: codecov/codecov-action@v1
       with:
         files: coverage.xml
-        verbose: true
