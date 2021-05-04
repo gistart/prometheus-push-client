@@ -42,6 +42,9 @@ class BaseUdpTransport:
         raise NotImplementedError()
 
 
+# TODO: crashes on creation time DNS errors -- retry?
+
+
 class SyncUdpTransport(BaseUdpTransport):
     def start(self):
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

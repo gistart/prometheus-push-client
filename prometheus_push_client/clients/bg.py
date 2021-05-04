@@ -1,8 +1,12 @@
 import asyncio
 import threading
 import time
+import logging
 
 from prometheus_push_client import compat
+
+
+log = logging.getLogger("prometheus.bg")
 
 
 class BackgroundClient:
@@ -52,7 +56,7 @@ class ThreadBGClient(BackgroundClient, threading.Thread):
             try:
                 self.transport.push_all(samples_iter)
             except Exception:
-                pass  # TODO log?
+                log.error("push crashed", exc_info=True)
             period = self.period - (time.time() - ts_start)
 
 
@@ -86,5 +90,5 @@ class AsyncioBGClient(BackgroundClient):
             try:
                 await self.transport.push_all(samples_iter)
             except Exception:
-                pass  # TODO: log?
+                log.error("push crashed", exc_info=True)
             period = self.period - (time.time() - ts_start)
