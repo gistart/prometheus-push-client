@@ -14,6 +14,8 @@ __pycache__
 .vscode*
 .coverage
 coverage.xml
+test/poke.py
+compare/*
 
 !.gitkeep
 !/.gitignore

@@ -17,6 +17,7 @@ class BaseUdpTransport:
         self.transport.close()
 
     def pack_datagrams(self, iterable):
+        # TODO: if first line > mtu?
         datagram = []
         datagram_size = 0
         for line in iterable:

@@ -74,7 +74,7 @@ def test_vic_influx_udp_thread(cfg, counter1):
     with pytest.raises(ZeroDivisionError):
         _test()
 
-    time.sleep(2.0)  # let them sync
+    time.sleep(3.0)  # let them sync
 
     found_after = export(cfg)
     count_after = count_samples(found_after, counter1._name)
@@ -103,7 +103,7 @@ async def test_vic_influx_udp_async(cfg, counter1):
     with pytest.raises(ZeroDivisionError):
         await _test()
 
-    await asyncio.sleep(2.0)  # let them sync
+    await asyncio.sleep(3.0)  # let them sync
 
     found_after = export(cfg)
     count_after = count_samples(found_after, counter1._name)
@@ -131,7 +131,7 @@ def test_vic_influx_http_thread(cfg, counter1):
     with pytest.raises(ZeroDivisionError):
         _test()
 
-    time.sleep(2.0)  # let them sync
+    time.sleep(3.0)  # let them sync
 
     found_after = export(cfg)
     count_after = count_samples(found_after, counter1._name)
@@ -160,7 +160,7 @@ async def test_vic_influx_http_async(cfg, counter1):
     with pytest.raises(ZeroDivisionError):
         await _test()
 
-    await asyncio.sleep(2.0)  # let them sync
+    await asyncio.sleep(3.0)  # let them sync
 
     found_after = export(cfg)
     count_after = count_samples(found_after, counter1._name)

@@ -2,6 +2,10 @@ from prometheus_push_client.formats.base import BaseFormat
 
 
 class InfluxFormat(BaseFormat):
+    """
+    As descibed at:
+    https://docs.influxdata.com/influxdb/v1.8/write_protocols/line_protocol_tutorial/
+    """
 
     FMT_SAMPLE = "{sample_name}{tag_set} {measurement_name}={value}{timestamp}"
 
