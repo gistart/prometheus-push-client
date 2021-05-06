@@ -6,11 +6,10 @@ import logging
 from prometheus_push_client import compat
 
 
-log = logging.getLogger("prometheus.bg")
+log = logging.getLogger("prometheus.batch")
 
 
-class BackgroundClient:
-
+class BaseBatchClient:
     def __init__(self, format, transport, period=15.0, *args, **kwargs):
         self.format = format
         self.transport = transport
@@ -29,7 +28,7 @@ class BackgroundClient:
             yield last_step
 
 
-class ThreadBGClient(BackgroundClient, threading.Thread):
+class ThreadBatchClient(BaseBatchClient, threading.Thread):
     def start(self):
         self.stop_event = threading.Event()
         self.transport.start()
@@ -52,15 +51,15 @@ class ThreadBGClient(BackgroundClient, threading.Thread):
                     break
 
             ts_start = time.time()
-            samples_iter = self.format.iter_samples()
+            data_gen = self.format.iter_samples()
             try:
-                self.transport.push_all(samples_iter)
+                self.transport.push_all(data_gen)
             except Exception:
                 log.error("push crashed", exc_info=True)
             period = self.period - (time.time() - ts_start)
 
 
-class AsyncioBGClient(BackgroundClient):
+class AsyncBatchClient(BaseBatchClient):
     async def start(self):
         self.stop_event = asyncio.Event()
         await self.transport.start()
@@ -86,9 +85,9 @@ class AsyncioBGClient(BackgroundClient):
                     break
 
             ts_start = time.time()
-            samples_iter = self.format.iter_samples()
+            data_gen = self.format.iter_samples()
             try:
-                await self.transport.push_all(samples_iter)
+                await self.transport.push_all(data_gen)
             except Exception:
                 log.error("push crashed", exc_info=True)
             period = self.period - (time.time() - ts_start)

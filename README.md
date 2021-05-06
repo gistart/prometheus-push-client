@@ -25,7 +25,7 @@ New metric constructors use separate `PUSH_REGISTRY` as a default, not to interf
 
 ### Default labelvalues
 
-With regular prometheus_client, defaults may be defined for either _none_ or _all_ the labels (with `labelvalues`), but that's not enough.
+With regular prometheus_client, defaults may be defined for either _none_ or _all_ the labels (with `labelvalues`), but that's not enough (and sometimes doesn't work?).
 
 We probably want to define _some_ defaults, like `hostname`, or more importantly, **if we use VictoriaMetrics cluster**, we always need to push label `VictoriaMetrics_AccountID=<int>` (usually 1) or else our metrics will be ignored.
 
@@ -55,13 +55,13 @@ counter1.labels(host="non-default", event_type="login").inc()
 counter1.labels("non-default", "login").inc()
 ```
 
-Metrics with no labels are initialized at creation time. This can have unpleasant side-effect: if we initialize lots of metrics not used in currently running job, background clients will have to push their non-changing values in every synchronization session.
+Metrics with no labels are initialized at creation time. This can have unpleasant side-effect: if we initialize lots of metrics not used in currently running job, batch clients will have to push their non-changing values in every synchronization session.
 
 To avoid that we'll have to properly isolate each task's metrics, which can be impossible or rather tricky, or we can create metrics with default, non-changing labels (like `hostname`). Such metrics will be initialized on fisrt use (inc), and we'll be pushing only those we actually used.
 
-## Background clients
+## Batch clients
 
-Background clients spawn synchronization jobs "in background" (meaning in a thread or asyncio task) to periodically send all metrics from `ppc.PUSH_REGISTRY` to the destination.
+Batch clients spawn synchronization jobs "in background" (meaning in a thread or asyncio task) to periodically send all metrics from `ppc.PUSH_REGISTRY` to the destination.
 
 Clients will attempt to stop gracefully, synchronizing registry "one last time" after job exits or crashes. Sometimes this _may_ mess up Grafana sampling, but the worst picture I could atrifically create looks like this:
 
@@ -99,3 +99,8 @@ async def main(urls):
     req_hist.labels(gethostname(url)).observe(response.elapsed)
     # ...
 ```
+
+
+## Streming clients
+
+:warning: histogram.obsrever doesn't work, fix later

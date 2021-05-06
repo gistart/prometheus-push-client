@@ -6,7 +6,7 @@ from prometheus_push_client import compat
 
 class BaseUdpTransport:
 
-    def __init__(self, host, port, mtu=500, datagram_lines=25):
+    def __init__(self, host, port, mtu=508, datagram_lines=25):
         self.host = host
         self.port = int(port)
         self.transport = None
@@ -17,25 +17,25 @@ class BaseUdpTransport:
         self.transport.close()
 
     def pack_datagrams(self, iterable):
-        # TODO: if first line > mtu?
         datagram = []
-        datagram_size = 0
+        datagram_bytes = 0
         for line in iterable:
-            if (
-                len(datagram) == self._datagram_lines or
-                len(line) + datagram_size >= self._mtu
-            ):
-                yield b"\n".join(datagram)
-                datagram.clear()
-                datagram_size = 0
+            if len(datagram) != 0:  # first line always goes
+                if (
+                    len(datagram) == self._datagram_lines or
+                    len(line) + datagram_bytes > self._mtu
+                ):
+                    yield b"\n".join(datagram)
+                    datagram.clear()
+                    datagram_bytes = 0
 
             datagram.append(line)
-            datagram_size += len(line)
+            datagram_bytes += len(line) + 1  # newline!
 
-        if datagram:
+        if len(datagram):
             yield b"\n".join(datagram)
 
-    def push_all(self, iterable):
+    def push_all_sync(self, iterable):
         for data in self.pack_datagrams(iterable):
             self.push_one(data)
 
@@ -49,6 +49,8 @@ class BaseUdpTransport:
 class SyncUdpTransport(BaseUdpTransport):
     def start(self):
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    push_all = BaseUdpTransport.push_all_sync
 
     def push_one(self, data):
         self.transport.sendto(data, (self.host, self.port))
@@ -66,7 +68,7 @@ class AioUdpTransport(BaseUdpTransport):
         super().stop()
 
     async def push_all(self, iterable):
-        super().push_all(iterable)
+        self.push_all_sync(iterable)
 
     def push_one(self, data):
         self.transport.sendto(data)

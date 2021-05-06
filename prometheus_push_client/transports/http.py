@@ -18,6 +18,9 @@ class BaseHttpTransport:
     def _validate(self):
         pass
 
+    def push_all_sync(self):
+        raise NotImplementedError("brave proposal")
+
 
 # TODO: configurable push formats ?
 

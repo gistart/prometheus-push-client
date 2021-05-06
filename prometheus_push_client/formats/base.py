@@ -13,6 +13,11 @@ class BaseFormat:
 
     def iter_samples(self):
         for metric in self.registry.collect():
+            for line in self.format_metrics(metric):
+                yield line
+
+    def format_metrics(self, *metrics):
+        for metric in metrics:
             for sample in metric.samples:
                 line = self.format_sample(sample, metric)
                 if isinstance(line, str):
