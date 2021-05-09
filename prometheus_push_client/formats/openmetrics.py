@@ -25,7 +25,7 @@ class OpenMetricsFormat(BaseFormat):
             tag_set = "{%s}" % ",".join(tags)
 
         ts = ""
-        if sample.timestamp:
+        if sample.timestamp:  # pragma: no cover
             ts = " %s" % sample.timestamp
 
         # TODO: TYPE string?

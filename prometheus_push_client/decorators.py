@@ -93,6 +93,7 @@ def statsd_udp_stream(host, port, registry=ppc.PUSH_REGISTRY):
 # decorator AND context manager
 #
 
+
 class _sync_wrap:
     def __init__(self, client):
         self.client = client

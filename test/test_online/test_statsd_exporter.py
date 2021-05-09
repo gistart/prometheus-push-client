@@ -39,8 +39,17 @@ def hist1(request):
     ))
 
 
+@pytest.fixture(scope="module")  #! important
+def gauge1(request):
+    return make_metric_fixture(request, ppc.Gauge(
+        name="g1",
+        namespace=NS,
+        subsystem="statsd_udp",
+        # no labels!
+    ))
 
-def test_statsd_udp_thread(cfg, hist1):
+
+def test_statsd_udp_thread(cfg, hist1, gauge1):
 
     for i in range(1, 251):
         hist1.labels(l1=1).observe(i / 100)
@@ -48,13 +57,13 @@ def test_statsd_udp_thread(cfg, hist1):
     period = 0.3
     sleeps = 2
     sleep_sec = 1.1
-    samples_expected = math.ceil(sleeps / period)  # + graceful
 
     @ppc.statsd_udp_thread(cfg.statsd_host, cfg.statsd_udp_port, period)
     def _test():
         for i in range(1, sleeps + 1):
             hist1.labels(l1=2).observe(i / 10)
             time.sleep(sleep_sec)
+            gauge1.set(i)
         return 1 / 0
 
     with pytest.raises(ZeroDivisionError):
@@ -62,11 +71,11 @@ def test_statsd_udp_thread(cfg, hist1):
 
     time.sleep(2.0)  # wait remote sync
 
-    local_res = collect_metrics(hist1._name)
+    local_res = collect_metrics(hist1._name, gauge1._name)
     local_res_lines = sorted(local_res.split("\n"))
 
     remote_all = get_metrics(cfg)
-    remote_res = collect_metrics(hist1._name, data=remote_all)
+    remote_res = collect_metrics(hist1._name, gauge1._name, data=remote_all)
     remote_res_lines = sorted(remote_res.split("\n"))
 
     assert len(local_res_lines) == len(remote_res_lines), remote_res
@@ -78,20 +87,83 @@ def test_statsd_udp_thread(cfg, hist1):
 
 
 @pytest.mark.asyncio
-async def test_statsd_udp_asyncio(cfg, hist1):
+async def test_statsd_udp_asyncio(cfg, hist1, gauge1):
     for i in range(1, 251):
         hist1.labels(l1=1).observe(i / 100)
 
     period = 0.3
     sleeps = 2
     sleep_sec = 1.1
-    samples_expected = math.ceil(sleeps / period)  # + graceful
 
-    @ppc.statsd_udp_async(cfg.statsd_host, cfg.statsd_udp_port, period)
     async def _test():
         for i in range(1, sleeps + 1):
             hist1.labels(l1=2).observe(i / 10)
             await asyncio.sleep(sleep_sec)
+            gauge1.set(i)
+        return 1 / 0
+
+    with pytest.raises(ZeroDivisionError):
+        async with ppc.statsd_udp_async(cfg.statsd_host, cfg.statsd_udp_port, period):
+            await _test()
+
+    await asyncio.sleep(2.0)  # wait remote sync
+
+    local_res = collect_metrics(hist1._name, gauge1._name)
+    local_res_lines = sorted(local_res.split("\n"))
+
+    remote_all = get_metrics(cfg)
+    remote_res = collect_metrics(hist1._name, gauge1._name, data=remote_all)
+    remote_res_lines = sorted(remote_res.split("\n"))
+
+    assert len(local_res_lines) == len(remote_res_lines), remote_res
+    for loc, rem in zip(local_res_lines, remote_res_lines):
+        assert (
+            loc == rem or
+            loc.startswith(f"{rem}.")  # statsd-side float -> int
+        )
+
+
+def test_statsd_udp_stream(cfg, hist1, gauge1):
+    for i in range(1, 51):
+        hist1.labels(l1=1).observe(i / 100)
+
+    def _test():
+        for i in range(1, 31):
+            hist1.labels(l1=2).observe(i / 10)
+            gauge1.set(i)
+        return 1 / 0
+
+    with pytest.raises(ZeroDivisionError):
+        with ppc.statsd_udp_stream(cfg.statsd_host, cfg.statsd_udp_port):
+            _test()
+
+    time.sleep(2.0)  # wait remote sync
+
+    local_res = collect_metrics(hist1._name, gauge1._name)
+    local_res_lines = sorted(local_res.split("\n"))
+
+    remote_all = get_metrics(cfg)
+    remote_res = collect_metrics(hist1._name, gauge1._name, data=remote_all)
+    remote_res_lines = sorted(remote_res.split("\n"))
+
+    assert len(local_res_lines) == len(remote_res_lines), remote_res
+    for loc, rem in zip(local_res_lines, remote_res_lines):
+        assert (
+            loc == rem or
+            loc.startswith(f"{rem}.")  # statsd-side float -> int
+        )
+
+
+@pytest.mark.asyncio
+async def test_statsd_udp_aiostream(cfg, hist1, gauge1):
+    for i in range(1, 51):
+        hist1.labels(l1=1).observe(i / 100)
+
+    @ppc.statsd_udp_aiostream(cfg.statsd_host, cfg.statsd_udp_port)
+    async def _test():
+        for i in range(1, 31):
+            hist1.labels(l1=2).observe(i / 10)
+            gauge1.set(i)
         return 1 / 0
 
     with pytest.raises(ZeroDivisionError):
@@ -99,11 +171,11 @@ async def test_statsd_udp_asyncio(cfg, hist1):
 
     await asyncio.sleep(2.0)  # wait remote sync
 
-    local_res = collect_metrics(hist1._name)
+    local_res = collect_metrics(hist1._name, gauge1._name)
     local_res_lines = sorted(local_res.split("\n"))
 
     remote_all = get_metrics(cfg)
-    remote_res = collect_metrics(hist1._name, data=remote_all)
+    remote_res = collect_metrics(hist1._name, gauge1._name, data=remote_all)
     remote_res_lines = sorted(remote_res.split("\n"))
 
     assert len(local_res_lines) == len(remote_res_lines), remote_res

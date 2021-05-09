@@ -17,7 +17,7 @@ pip install prometheus-push-client
 
 ## Metrics
 
-This library uses `prometheus-client` metric implementation, but adds with some minor tweaks.
+This library uses `prometheus-client` metric implementation, but adds some minor tweaks.
 
 ### Separate registry
 
@@ -25,7 +25,7 @@ New metric constructors use separate `PUSH_REGISTRY` as a default, not to interf
 
 ### Default labelvalues
 
-With regular prometheus_client, defaults may be defined for either _none_ or _all_ the labels (with `labelvalues`), but that's not enough (and sometimes doesn't work?).
+With regular prometheus_client, defaults may be defined for either _none_ or _all_ the labels (with `labelvalues`), but that's not enough. Moreover `labelvalues` sometimes doesn't work as expected.
 
 We probably want to define _some_ defaults, like `hostname`, or more importantly, **if we use VictoriaMetrics cluster**, we always need to push label `VictoriaMetrics_AccountID=<int>` (usually 1) or else our metrics will be ignored.
 
@@ -63,11 +63,11 @@ To avoid that we'll have to properly isolate each task's metrics, which can be i
 
 Batch clients spawn synchronization jobs "in background" (meaning in a thread or asyncio task) to periodically send all metrics from `ppc.PUSH_REGISTRY` to the destination.
 
-Clients will attempt to stop gracefully, synchronizing registry "one last time" after job exits or crashes. Sometimes this _may_ mess up Grafana sampling, but the worst picture I could atrifically create looks like this:
+Clients will attempt to stop gracefully, synchronizing registry "one last time" after job exits or crashes. Sometimes this _may_ mess up Grafana sampling, but the worst picture I could artifically create looks like this:
 
 ![graceful push effect](./docs/img/graceful_stop_effect01.png)
 
-Best way to use them is via decorators. These clients are intended to be used with long running, but finite tasks, which could be spawned anywhere, therefor not easily accessible by the scraper. If that's not the case -- just use "passive mode" w/ the scraper instead.
+Best way to use them is via decorators / context managers. These clients are intended to be used with long running, but finite tasks, which could be spawned anywhere, therefor not easily accessible by the scraper. If that's not the case -- just use "passive mode" w/ the scraper instead.
 
 ``` python
 def influx_udp_async(host, port, period=15.0):
@@ -97,10 +97,27 @@ req_hist = ppc.Histogram(
 async def main(urls):
     # the job ...
     req_hist.labels(gethostname(url)).observe(response.elapsed)
-    # ...
+
+# OR
+
+async def main(urls):
+    async with ppc.influx_udp_async("victoria.acme.inc.net", 9876, period=15):
+        # the job ...
+        req_hist.labels(gethostname(url)).observe(response.elapsed)
 ```
 
 
-## Streming clients
+## Streaming clients
 
-:warning: histogram.obsrever doesn't work, fix later
+If for some reason every metric change needs to be synced, UDP streaming clients are implemented in this library.
+
+```python
+def influx_udp_aiostream(host, port):
+def influx_udp_stream(host, port):
+def statsd_udp_aiostream(host, port):
+def statsd_udp_stream(host, port):
+```
+
+Usage is completely identical to batch clients' decorators / context managers.
+
+:warning: Histogram and Summary `.time() decorator` doesn't work in this mode atm, because it can't be easily monkey-patched.

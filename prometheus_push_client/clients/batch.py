@@ -16,7 +16,7 @@ class BaseBatchClient:
         self.period = float(period)
         self.stop_event = None
 
-        self._period_step = 0.5  # check event every 0.5 seconds
+        self._period_step = 0.25  # check event every 0.25 seconds
 
         super().__init__(*args, **kwargs)
 

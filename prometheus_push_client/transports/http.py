@@ -1,11 +1,11 @@
 import asyncio
 try:
     import requests
-except ImportError:
+except ImportError:  # pragma: no cover
     requests = None
 try:
     import aiohttp
-except ImportError:
+except ImportError:  # pragma: no cover
     aiohttp = None
 
 
@@ -15,7 +15,7 @@ class BaseHttpTransport:
         self.url = url
         self.session = None
 
-    def _validate(self):
+    def _validate(self):  # pragma: no cover
         pass
 
     def push_all_sync(self):
@@ -54,5 +54,5 @@ class AioHttpTransport(BaseHttpTransport):
 
     async def push_all(self, iterable):
         data = b"\n".join(iterable)
-        async with self.session.post(self.url, data=data) as response:
+        async with self.session.post(self.url, data=data) as _:
             pass

@@ -17,7 +17,7 @@ from .decorators import (
 from .formats.influx import InfluxFormat
 from .formats.statsd import StatsdFormat
 from .formats.openmetrics import OpenMetricsFormat
-from .metrics import Counter, Gauge, Summary, Histogram, Info, Enum
+from .metrics import Counter, Gauge, Summary, Histogram
 from .transports.http import SyncHttpTransport, AioHttpTransport
 from .transports.udp import SyncUdpTransport, AioUdpTransport
 from .version import __version__

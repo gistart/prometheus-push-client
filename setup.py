@@ -1,4 +1,4 @@
-from distutils.core import setup
+import setuptools
 
 
 # version
@@ -32,13 +32,15 @@ extras_require["test"] = [
 ]
 extras_require["dev"] = [
     "ipython",
+    "setuptools",
+    "wheel",
     "twine",
     *extras_require["test"]
 ]
 
 
 # setup
-setup(
+setuptools.setup(
     name="prometheus_push_client",
     version=__version__,
     author="gistart",
@@ -48,15 +50,15 @@ setup(
     long_description_content_type="text/markdown",
     url=github_url,
     license="Apache License 2.0",
-    classifiers=(
+    classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "License :: OSI Approved :: Apache License 2.0",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
-    ),
+    ],
     python_requires=">=3.6",
     packages=[
         "prometheus_push_client"

@@ -35,7 +35,7 @@ class InfluxFormat(BaseFormat):
             tag_set = ",".join(tags)
 
         ts = ""
-        if sample.timestamp:
+        if sample.timestamp:  # pragma: no cover
             ts = f" {int(sample.timestamp * 1e9)}"  # to nanoseconds
 
         return self.FMT_SAMPLE.format(

@@ -30,6 +30,4 @@ class Gauge(_PushMixin, pc.Gauge): pass
 class Summary(_PushMixin, pc.Summary): pass
 class Histogram(_PushMixin, pc.Histogram): pass
 
-# TODO: TEST!!1
-class Info(_PushMixin, pc.Info): pass
-class Enum(_PushMixin, pc.Enum): pass
+# TODO: Info, Enum ?
