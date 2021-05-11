@@ -49,6 +49,7 @@ setuptools.setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     url=github_url,
+    packages=setuptools.find_packages(include=["prometheus_push_client*"]),
     license="Apache License 2.0",
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -60,9 +61,6 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    packages=[
-        "prometheus_push_client"
-    ],
     install_requires=[
         "prometheus_client>=0.4.0",
     ],
