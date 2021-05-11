@@ -25,9 +25,9 @@ New metric constructors use separate `PUSH_REGISTRY` as a default, not to interf
 
 ### Default labelvalues
 
-With regular prometheus_client, defaults may be defined for either _none_ or _all_ the labels (with `labelvalues`), but that's not enough. Moreover `labelvalues` sometimes doesn't work as expected.
+With regular `prometheus_client`, defaults may be defined for either _none_ or _all_ the labels (with `labelvalues`), but that's not enough. Moreover `labelvalues` sometimes doesn't work as expected.
 
-We probably want to define _some_ defaults, like `hostname`, or more importantly, **if we use VictoriaMetrics cluster**, we always need to push label `VictoriaMetrics_AccountID=<int>` (usually 1) or else our metrics will be ignored.
+We probably want to define _some_ defaults, like `hostname`, or more importantly, **if we use VictoriaMetrics cluster**, `VictoriaMetrics_AccountID=<tenant_id>` (try 0 as a default) label must always be set, and metrics without it will be ignored.
 
 Following example shows how to use defaults, and how to override them if necessary.
 
@@ -39,7 +39,7 @@ counter1 = ppc.Counter(
     name="c1",
     labelnames=["VictoriaMetrics_AccountID", "host", "event_type"],
     default_labelvalues={
-        "VictoriaMetrics_AccountID": 1,
+        "VictoriaMetrics_AccountID": 0,
         "host": socket.gethostname(),
     }
 )
@@ -57,13 +57,13 @@ counter1.labels("non-default", "login").inc()
 
 Metrics with no labels are initialized at creation time. This can have unpleasant side-effect: if we initialize lots of metrics not used in currently running job, batch clients will have to push their non-changing values in every synchronization session.
 
-To avoid that we'll have to properly isolate each task's metrics, which can be impossible or rather tricky, or we can create metrics with default, non-changing labels (like `hostname`). Such metrics will be initialized on fisrt use (inc), and we'll be pushing only those we actually used.
+To avoid that we'll have to properly isolate each task's metrics, which can be impossible or rather tricky, or we can create metrics with default, non-changing labels (like `hostname`). Such metrics will be initialized on first use (inc), and we'll be pushing only those we actually utilized.
 
 ## Batch clients
 
 Batch clients spawn synchronization jobs "in background" (meaning in a thread or asyncio task) to periodically send all metrics from `ppc.PUSH_REGISTRY` to the destination.
 
-Clients will attempt to stop gracefully, synchronizing registry "one last time" after job exits or crashes. Sometimes this _may_ mess up Grafana sampling, but the worst picture I could artifically create looks like this:
+Clients will attempt to stop gracefully, synchronizing registry "one last time" after job exits or crashes. Sometimes this _may_ mess up sampling, but the worst case I could artifically create looks like this:
 
 ![graceful push effect](./docs/img/graceful_stop_effect01.png)
 
@@ -120,4 +120,4 @@ def statsd_udp_stream(host, port):
 
 Usage is completely identical to batch clients' decorators / context managers.
 
-:warning: Histogram and Summary `.time() decorator` doesn't work in this mode atm, because it can't be easily monkey-patched.
+:warning: Histogram and Summary `.time() decorator` doesn't work in this mode atm, because it can't be monkey-patched easily.
