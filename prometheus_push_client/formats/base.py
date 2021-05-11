@@ -1,5 +1,3 @@
-import time
-
 from prometheus_push_client.registry import PUSH_REGISTRY
 
 

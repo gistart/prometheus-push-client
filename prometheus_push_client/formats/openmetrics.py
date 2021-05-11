@@ -1,5 +1,3 @@
-import prometheus_client as pc
-
 from prometheus_push_client.formats.base import BaseFormat
 
 

@@ -1,4 +1,3 @@
-import asyncio
 try:
     import requests
 except ImportError:  # pragma: no cover
