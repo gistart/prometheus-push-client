@@ -59,7 +59,9 @@ Metrics with no labels are initialized at creation time. This can have unpleasan
 
 To avoid that we'll have to properly isolate each task's metrics, which can be impossible or rather tricky, or we can create metrics with default, non-changing labels (like `hostname`). Such metrics will be initialized on first use (inc), and we'll be pushing only those we actually utilized.
 
-## Batch clients
+## Clients
+
+### Batch clients
 
 Batch clients spawn synchronization jobs "in background" (meaning in a thread or asyncio task) to periodically send all metrics from `ppc.PUSH_REGISTRY` to the destination.
 
@@ -107,7 +109,7 @@ async def main(urls):
 ```
 
 
-## Streaming clients
+### Streaming clients
 
 If for some reason every metric change needs to be synced, UDP streaming clients are implemented in this library.
 
@@ -121,3 +123,8 @@ def statsd_udp_stream(host, port):
 Usage is completely identical to batch clients' decorators / context managers.
 
 :warning: Histogram and Summary `.time() decorator` doesn't work in this mode atm, because it can't be monkey-patched easily.
+
+
+## Transports
+
+Main goal is not to interrupt measured jobs with errors from monitoring code. Therefor all transports will attempt to catch all network errors, logging error info and corresponding tracebacks to stdout.
