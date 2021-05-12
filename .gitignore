@@ -15,9 +15,9 @@ __pycache__
 .coverage
 coverage.xml
 test/poke.py
-build/*
-dist/*
-compare/*
+build*
+dist*
+compare*
 
 !.gitkeep
 !/.gitignore

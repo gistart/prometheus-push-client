@@ -17,6 +17,7 @@ class BaseBatchClient:
         self.stop_event = None
 
         self._period_step = 0.25  # check event every 0.25 seconds
+        self._min_period = 0.1  # sleep no less than
 
         super().__init__(*args, **kwargs)
 
@@ -56,7 +57,7 @@ class ThreadBatchClient(BaseBatchClient, threading.Thread):
                 self.transport.push_all(data_gen)
             except Exception:
                 log.error("push crashed", exc_info=True)
-            period = self.period - (time.time() - ts_start)
+            period = max(self._min_period, self.period - (time.time() - ts_start))
 
 
 class AsyncBatchClient(BaseBatchClient):
@@ -90,4 +91,4 @@ class AsyncBatchClient(BaseBatchClient):
                 await self.transport.push_all(data_gen)
             except Exception:
                 log.error("push crashed", exc_info=True)
-            period = self.period - (time.time() - ts_start)
+            period = max(self._min_period, self.period - (time.time() - ts_start))

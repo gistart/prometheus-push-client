@@ -1,11 +1,14 @@
 import asyncio
 import socket
+import logging
 
 from prometheus_push_client import compat
 
 
-class BaseUdpTransport:
+log = logging.getLogger("prometheus.udp")
 
+
+class BaseUdpTransport:
     def __init__(self, host, port, mtu=508, datagram_lines=25):
         self.host = host
         self.port = int(port)
@@ -40,28 +43,42 @@ class BaseUdpTransport:
             self.push_one(data)
 
     def push_one(self, data):
-        raise NotImplementedError()
+        try:
+            return self.transport.sendto(data, (self.host, self.port))
+        except socket.gaierror:  # name resolution error
+            pass
 
 
-# TODO: crashes on creation time DNS errors -- retry?
+# TODO: ipv6 support?
 
 
 class SyncUdpTransport(BaseUdpTransport):
     def start(self):
+        self._getaddrinfo()
         self.transport = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     push_all = BaseUdpTransport.push_all_sync
 
-    def push_one(self, data):
-        self.transport.sendto(data, (self.host, self.port))
+    def _getaddrinfo(self):
+        try:
+            return socket.getaddrinfo(
+                self.host,
+                self.port,
+                family=socket.AF_INET,
+                type=socket.SOCK_DGRAM,
+            )
+        except socket.gaierror as e:
+            log.error("%s -- %s:%s", e, self.host, self.port)
 
 
 class AioUdpTransport(BaseUdpTransport):
     async def start(self, loop=None):
         loop = loop or compat.get_running_loop()
+        await self._getaddrinfo(loop)
         self.transport, _ = await loop.create_datagram_endpoint(
             lambda: asyncio.DatagramProtocol(),
-            remote_addr=(self.host, self.port)
+            family=socket.AF_INET,
+            allow_broadcast=False,
         )
 
     async def stop(self):
@@ -70,5 +87,13 @@ class AioUdpTransport(BaseUdpTransport):
     async def push_all(self, iterable):
         self.push_all_sync(iterable)
 
-    def push_one(self, data):
-        self.transport.sendto(data)
+    async def _getaddrinfo(self, loop):
+        try:
+            return await loop.getaddrinfo(
+                self.host,
+                self.port,
+                family=socket.AF_INET,
+                type=socket.SOCK_DGRAM,
+            )
+        except socket.gaierror as e:
+            log.error("%s -- %s:%s", e, self.host, self.port)
