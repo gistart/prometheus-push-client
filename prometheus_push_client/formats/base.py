@@ -16,11 +16,22 @@ class BaseFormat:
 
     def format_metrics(self, *metrics):
         for metric in metrics:
+            for line in self.format_header(metric):
+                yield _enc(line)
+
             for sample in metric.samples:
                 line = self.format_sample(sample, metric)
-                if isinstance(line, str):
-                    line = line.encode("utf-8")
-                yield line
+                yield _enc(line)
+
+    def format_header(self, metric):
+        return
+        yield  # "empty" generator by default
 
     def format_sample(self, metric, sample):
         raise NotImplementedError()
+
+
+def _enc(line):
+    if isinstance(line, str):
+        return line.encode("utf-8")
+    return line

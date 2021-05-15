@@ -21,19 +21,19 @@ def influx_udp_thread(host, port, period=15.0, registry=ppc.PUSH_REGISTRY):
     return _sync_wrap(client)
 
 
-def influx_http_async(url, period=15.0, registry=ppc.PUSH_REGISTRY):
+def influx_http_async(url, verb="POST", period=15.0, registry=ppc.PUSH_REGISTRY):
     client = ppc.AsyncBatchClient(
         format=ppc.InfluxFormat(registry=registry),
-        transport=ppc.AioHttpTransport(url),
+        transport=ppc.AioHttpTransport(url, verb),
         period=period,
     )
     return _async_wrap(client)
 
 
-def influx_http_thread(url, period=15.0, registry=ppc.PUSH_REGISTRY):
+def influx_http_thread(url, verb="POST", period=15.0, registry=ppc.PUSH_REGISTRY):
     client = ppc.ThreadBatchClient(
         format=ppc.InfluxFormat(registry=registry),
-        transport=ppc.SyncHttpTransport(url),
+        transport=ppc.SyncHttpTransport(url, verb),
         period=period,
     )
     return _sync_wrap(client)
@@ -85,6 +85,24 @@ def statsd_udp_stream(host, port, registry=ppc.PUSH_REGISTRY):
     client = ppc.SyncStreamingClient(
         format=ppc.StatsdFormat(registry=registry),
         transport=ppc.SyncUdpTransport(host, port),
+    )
+    return _sync_wrap(client)
+
+
+def openmetrics_http_async(url, verb="POST", period=15.0, registry=ppc.PUSH_REGISTRY):
+    client = ppc.AsyncBatchClient(
+        format=ppc.OpenMetricsFormat(registry=registry),
+        transport=ppc.AioHttpTransport(url, verb),
+        period=period,
+    )
+    return _async_wrap(client)
+
+
+def openmetrics_http_thread(url, verb="POST", period=15.0, registry=ppc.PUSH_REGISTRY):
+    client = ppc.ThreadBatchClient(
+        format=ppc.OpenMetricsFormat(registry=registry),
+        transport=ppc.SyncHttpTransport(url, verb),
+        period=period,
     )
     return _sync_wrap(client)
 
