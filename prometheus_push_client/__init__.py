@@ -13,6 +13,8 @@ from .decorators import (
     statsd_udp_aiostream,
     influx_udp_stream,
     statsd_udp_stream,
+    openmetrics_http_async,
+    openmetrics_http_thread,
 )
 from .formats.influx import InfluxFormat
 from .formats.statsd import StatsdFormat

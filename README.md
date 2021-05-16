@@ -3,11 +3,13 @@
 
 # prometheus-push-client
 
-Push metrics from your regular and/or long-running jobs to existing Prometheus/VictoriaMetrics monitoring system.
+Push metrics from your periodic long-running jobs to existing Prometheus/VictoriaMetrics monitoring system.
 
-Currently supports pushes directly to VictoriaMetrics via UDP and HTTP using InfluxDB line protocol as [described here](https://docs.victoriametrics.com/Single-server-VictoriaMetrics.html?highlight=telegraf#how-to-send-data-from-influxdb-compatible-agents-such-as-telegraf).
+Currently supports pushes directly to `VictoriaMetrics` via UDP and HTTP using InfluxDB line protocol as [described here](https://docs.victoriametrics.com/Single-server-VictoriaMetrics.html?highlight=telegraf#how-to-send-data-from-influxdb-compatible-agents-such-as-telegraf).
 
-For pure Prometheus setups, pushes into StatsD/statsd-exporter in StatsD format via UDP are supported ([see exporter docs](https://github.com/prometheus/statsd_exporter#with-statsd)). Prometheus and StatsD metric types are not fully compatible, so currenly all metrics become StatsD gauges, but `rate`, `increase`, `histogram_quantile` and other PromQL functions produce same results as if types never changed.
+For `pure Prometheus` setups, several options are supported:
+- to [StatsD](https://github.com/statsd/statsd) or [statsd-exporter](https://github.com/prometheus/statsd_exporter#with-statsd) in StatsD format via UDP. Prometheus and StatsD metric types are not fully compatible, so currenly all metrics become StatsD gauges, but `rate`, `increase`, `histogram_quantile` and other PromQL functions produce same results as if types never changed.
+- to [pushgateway](https://github.com/prometheus/pushgateway) or [prom-aggregation-gateway](https://github.com/weaveworks/prom-aggregation-gateway) in OpenMetrics format via HTTP. Please read corresponding docs about appropriate use cases and limitations.
 
 Install it via pip:
 
@@ -74,10 +76,12 @@ Best way to use them is via decorators / context managers. These clients are int
 ``` python
 def influx_udp_async(host, port, period=15.0):
 def influx_udp_thread(host, port, period=15.0):
-def influx_http_async(url, period=15.0):
-def influx_http_thread(url, period=15.0):
 def statsd_udp_async(host, port, period=15.0):
 def statsd_udp_thread(host, port, period=15.0):
+def influx_http_async(url, verb="POST", period=15.0):
+def influx_http_thread(url, verb="POST", period=15.0):
+def openmetrics_http_async(url, verb="POST", period=15.0):
+def openmetrics_http_thread(url, verb="POST", period=15.0):
 ```
 
 Usage example:
@@ -107,6 +111,8 @@ async def main(urls):
         # the job ...
         req_hist.labels(gethostname(url)).observe(response.elapsed)
 ```
+
+Please read about mandatory `job` tag within url while [using pushgateway](https://github.com/prometheus/pushgateway#url).
 
 
 ### Streaming clients

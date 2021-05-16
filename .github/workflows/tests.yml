@@ -31,6 +31,10 @@ jobs:
         - 9102:9102
         - 9125:9125
         - 9125:9125/udp
+      pushgateway:
+        image: prom/pushgateway:v1.4.0
+        ports:
+        - 9091:9091
     steps:
     - name: checkout
       uses: actions/checkout@v2
@@ -49,6 +53,8 @@ jobs:
         STATSD_HOST: localhost
         STATSD_API_PORT: 9102
         STATSD_UDP_PORT: 9125
+        PUSHGW_HOST: localhost
+        PUSHGW_PORT: 9091
     - name: upload-cov
       uses: codecov/codecov-action@v1
       with:
