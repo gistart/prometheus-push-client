@@ -21,8 +21,10 @@ class BaseHttpTransport:
 
     def prepare_data(self, iterable):
         data = b"\n".join(iterable)
-        to_pad = sum(ord(b"\n") != char for char in data[-2:])
-        return data.ljust(len(data) + to_pad, b"\n")  # ensure ends with "\n\n"
+        if data.endswith(b"\n\n"):  # pragma: no cover
+            return data
+        to_pad = 1 if data[-1] == ord(b"\n") else 2
+        return data.ljust(len(data) + to_pad, b"\n")
 
     def push_all_sync(self):
         raise NotImplementedError("brave proposal")
@@ -41,7 +43,7 @@ class SyncHttpTransport(BaseHttpTransport):
 
     def push_all(self, iterable):
         data = self.prepare_data(iterable)
-        resp = self.session.request(self.verb, self.url, data=data)
+        self.session.request(self.verb, self.url, data=data)
 
 
 class AioHttpTransport(BaseHttpTransport):
