@@ -20,6 +20,7 @@ def cfg():
         vm_ping_url = f"http://{vm_host}:{vm_api_port}/health"
         vm_write_url = f"http://{vm_host}:{vm_api_port}/write"
         vm_export_url = f"http://{vm_host}:{vm_api_port}/api/v1/export"
+        vm_import_url = f"http://{vm_host}:{vm_api_port}/api/v1/import/prometheus"
 
         statsd_url = f"http://{statsd_host}:{statsd_api_port}/metrics"
 
