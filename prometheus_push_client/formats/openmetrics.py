@@ -17,8 +17,8 @@ class OpenMetricsFormat(BaseFormat):
     })
 
 
-    def format_header(self, metric):
-        # as in generate_lastest implemented at:
+    def format_header(self, metric):  # pragma: no cover
+        # as in generate_latest implemented at:
         # https://github.com/prometheus/client_python/blob/master/prometheus_client/exposition.py
 
         mname, mtype = metric.name, metric.type
