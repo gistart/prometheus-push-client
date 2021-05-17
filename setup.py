@@ -12,7 +12,7 @@ github_url = 'https://github.com/gistart/prometheus-push-client'
 readme_lines = []
 with open('README.md') as fd:
     readme_lines = filter(None, fd.read().splitlines())
-readme_lines = list(readme_lines)[:12]
+readme_lines = list(readme_lines)[:14]
 readme_lines.append('Read more at [github page](%s).' % github_url)
 readme = '\n\n'.join(readme_lines)
 
